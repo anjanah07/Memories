@@ -17,10 +17,15 @@ import jwt_decode from "jwt-decode";
 import { redirect } from "react-router-dom";
 
 import { useNavigate } from "react-router-dom";
+import { signin, signup } from "../../actions/auth";
 
-// import * as dotenv from "dotenv";
-// dotenv.config();
-
+const initialState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+};
 const Auth = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -28,18 +33,25 @@ const Auth = () => {
 
   const [isSignup, setIsSignUp] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const handleSubmit = () => {};
-  const handleChange = () => {};
+  const [formData, setFormData] = useState(initialState);
+  const handleSubmit = (e) => {
+    if (isSignup) {
+      dispatch(signup(formData, navigate));
+    } else {
+      dispatch(signin(formData, navigate));
+    }
+    e.preventDefault();
+  };
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
   const handleShowPassword = () =>
     setShowPassword((prevShowPassword) => !prevShowPassword);
   const switchMode = () => {
-    console.log("Reached here");
     setIsSignUp((prevIsSignUp) => !prevIsSignUp);
     handleShowPassword(false);
   };
   const googleSuccess = (credentialResponse) => {
-    // const clientId = res.clientId;
-
     const decode = jwt_decode(credentialResponse.credential);
 
     const result = decode?.picture;
@@ -53,10 +65,8 @@ const Auth = () => {
         type: "AUTH",
         data: { result, token, nbf, name, email },
       });
-      console.log("in trycatch of Auth.js");
-      if (token) {
-        console.log("in if block");
 
+      if (token) {
         navigate("/");
       }
     } catch (error) {
@@ -86,7 +96,7 @@ const Auth = () => {
                   half
                 />
                 <Input
-                  name="firstName"
+                  name="lastName"
                   label="Last Name"
                   handleChange={handleChange}
                   autofocus
@@ -134,8 +144,6 @@ const Auth = () => {
                   className={classes.googleButton}
                   color="primary"
                   fullWidth
-                  // onClick={renderProps.onClick}
-                  // disabled={renderProps.disabled}
                   startIcon={<Icon />}
                   variant="contained"
                 >

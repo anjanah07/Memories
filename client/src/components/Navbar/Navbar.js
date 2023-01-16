@@ -5,18 +5,21 @@ import memories from "../../images/memories.png";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import decode from "jwt-decode";
 
 const Navbar = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   // const user = null;
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("profile")));
-  console.log(user);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   useEffect(() => {
     const token = user?.token;
-
+    if (token) {
+      const decodedToken = decode(token);
+      if (decodedToken.exp * 1000 < new Date().getTime()) logout();
+    }
     setUser(JSON.parse(localStorage.getItem("profile")));
   }, []);
   const logout = () => {
@@ -47,7 +50,7 @@ const Navbar = () => {
         {user ? (
           <div className={classes.profile}>
             <Avatar alt={user.result.name} src={user.result.imageUrl}>
-              {user.name.charAt(0)}
+              {user.result.name.charAt(0)}
             </Avatar>
             <Typography className={classes.userName} variant="h6">
               {user.name}
